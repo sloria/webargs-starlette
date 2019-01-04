@@ -14,7 +14,9 @@ from webargs import core
 TypeMapping = typing.Mapping[typing.Type, typing.Type[Field]]
 
 
-def annotations2schema(func: typing.Callable, type_mapping: TypeMapping = None):
+def annotations2schema(
+    func: typing.Callable, type_mapping: TypeMapping = None
+) -> Schema:
     type_mapping = type_mapping or Schema.TYPE_MAPPING
     annotations = getattr(func, "__annotations__", {})
     signature = inspect.signature(func)
@@ -72,9 +74,9 @@ def is_json_request(req: Request) -> bool:
 
 
 class StarletteParser(AsyncParser):
-    TYPE_MAPPING = Schema.TYPE_MAPPING.copy()
+    TYPE_MAPPING: TypeMapping = Schema.TYPE_MAPPING.copy()
 
-    __location_map__ = dict(
+    __location_map__: typing.Mapping = dict(
         path_params="parse_path_params", **core.Parser.__location_map__
     )
 
@@ -167,9 +169,9 @@ class StarletteParser(AsyncParser):
         def decorator(func: typing.Awaitable):
             @functools.wraps(func)
             async def wrapper(*a, **kw):
-                reqargs = annotations2schema(func, type_mapping=type_mapping)
+                schema = annotations2schema(func, type_mapping=type_mapping)
                 request = self.get_request_from_view_args(func, a, kw)
-                parsed = await self.parse(reqargs, request, **kwargs)
+                parsed = await self.parse(schema, request, **kwargs)
                 kw.update(parsed)
                 return await func(*a, **kw)
 
