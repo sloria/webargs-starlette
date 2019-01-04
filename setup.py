@@ -1,7 +1,7 @@
 import re
 from setuptools import setup, find_packages
 
-INSTALL_REQUIRES = ["webargs~=5.0", "starlette"]
+INSTALL_REQUIRES = ["webargs~=5.0", "starlette>=0.9.0"]
 EXTRAS_REQUIRE = {
     "tests": ["pytest", "mock", "webtest~=2.0.32", "webtest-asgi~=1.0.1"],
     "examples": ["httpie", "uvicorn"],
@@ -59,8 +59,7 @@ setup(
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
-        "Topic :: Internet :: WWW/HTTP :: Dynamic Content",
-        "Topic :: Internet :: WWW/HTTP :: WSGI :: Application",
+        "Topic :: Internet :: WWW/HTTP",
     ],
     test_suite="tests",
 )
