@@ -35,7 +35,9 @@ def annotations2schema(
     fields_dict = {}
     for name, annotation in annotations.items():
         # Skip over request argument and return annotation
-        if name == "return" or issubclass(annotation, Request):
+        if name == "return" or (
+            isinstance(annotation, type) and issubclass(annotation, Request)
+        ):
             continue
 
         if isinstance(annotation, Field):
