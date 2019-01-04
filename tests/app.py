@@ -1,10 +1,9 @@
 from starlette.applications import Starlette
 from starlette.responses import JSONResponse as J
-from starlette.exceptions import HTTPException
 
 import marshmallow as ma
 from webargs import fields
-from webargs_starlette import parser, use_args, use_kwargs
+from webargs_starlette import parser, use_args, use_kwargs, WebargsHTTPException
 
 from webargs.core import MARSHMALLOW_VERSION_INFO
 
@@ -119,7 +118,6 @@ async def echo_path_param(request):
     return J(parsed)
 
 
-@app.exception_handler(HTTPException)
+@app.exception_handler(WebargsHTTPException)
 async def http_exception(request, exc):
-    messages = exc.data["messages"]
-    return J(messages, status_code=exc.status_code)
+    return J(exc.messages, status_code=exc.status_code, headers=exc.headers)

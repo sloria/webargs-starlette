@@ -9,16 +9,25 @@ from webargs.asyncparser import AsyncParser
 from webargs import core
 
 
-def abort(
-    http_status_code: int, exc: Exception = None, detail: str = None, **kwargs
-) -> None:
-    """Raise a HTTPException for the given http_status_code. Attach any keyword
-    arguments to the exception for later processing.
+class WebargsHTTPException(HTTPException):
+    """Same as `starlette.exceptions.HTTPException` but stores validation
+    messages, the underlying exception, the `marshmallow.Schema` used to parse the request,  headers.
     """
-    exception = HTTPException(http_status_code, detail=detail)
-    exception.data = kwargs
-    exception.exc = exc
-    raise exception
+
+    def __init__(
+        self,
+        status_code: int,
+        detail: str = None,
+        messages: dict = None,
+        exception: Exception = None,
+        headers: dict = None,
+        schema: Schema = None,
+    ) -> None:
+        super().__init__(status_code, detail)
+        self.messages = messages
+        self.exception = exception
+        self.headers = headers
+        self.schema = schema
 
 
 def is_json_request(req: Request) -> bool:
@@ -65,7 +74,9 @@ class StarletteParser(AsyncParser):
     def handle_invalid_json_error(
         self, error: json.JSONDecodeError, req: Request, *args, **kwargs
     ) -> None:
-        abort(400, exc=error, messages={"json": ["Invalid JSON body."]})
+        raise WebargsHTTPException(
+            400, exception=error, messages={"json": ["Invalid JSON body."]}
+        )
 
     async def parse_form(self, req, name, field) -> typing.Any:
         """Pull a form value from the request."""
@@ -98,9 +109,9 @@ class StarletteParser(AsyncParser):
         responds with a 422 error.
         """
         status_code = error_status_code or self.DEFAULT_VALIDATION_STATUS
-        abort(
+        raise WebargsHTTPException(
             status_code,
-            exc=error,
+            exception=error,
             messages=error.messages,
             schema=schema,
             headers=error_headers,
