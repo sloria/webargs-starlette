@@ -2,7 +2,7 @@
 Changelog
 *********
 
-0.0.1 (unreleased)
+1.0.0 (2018-01-04)
 ------------------
 
 * First release.
