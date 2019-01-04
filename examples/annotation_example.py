@@ -19,7 +19,6 @@ Try the following with httpie (a cURL-like utility, http://httpie.org):
     $ http POST :5001/dateadd value=1973-04-10 addend=63
     $ http POST :5001/dateadd value=2014-10-23 addend=525600 unit=minutes
 """
-import uvicorn
 import datetime as dt
 
 from starlette.applications import Starlette
@@ -98,5 +97,7 @@ async def http_exception(request: Request, exc: WebargsHTTPException) -> Respons
 
 
 if __name__ == "__main__":
+    import uvicorn
+
     app.debug = True
     uvicorn.run(app, host="0.0.0.0", port=5001)
