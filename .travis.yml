@@ -26,6 +26,5 @@ jobs:
       on:
         tags: true
       distributions: sdist bdist_wheel
-      # TODO
-      # password:
-      #   secure: TMeTi5OPl2cYsl5hNP4w1xESd2vQUOy8NgZ0c3KbrVSSeBuUCGOKyYJZNGzD9KDMucCvYFuxCwYiDxP8tB5iT85z3rhdVkzppZTy3/3kXMODjlhMzqTnCdJSOoZZ+D5/Y3Zqb8QxU78NggPutfX4bbUU/wNsVbdODXWHe5y2q3k=
+      password:
+        secure: SUySeunJrswDakISNy0U7X2MtUKs4/UELiJ3FOIlle2ca39B2TOhrj9PknYLZn4aPuRymE59TeBWPYikJlnqTu1UaZZw/Bu/xst6gWdr+6EY6odu6DJt7KpkatuTNq3uiV12MVyYKYHKLhOj554YYyTcPczdZ5O3kqnmFwDxHFt68aq/x4WviyRWVK4TyjHtZwKwngBmTyK+0W55aKVcjLrOps7lRNjKCzB1VPG/oLS3KkRwRAtI6I1iq8KKk6dLROJ0ydcCFQ6Pa1LAFr19JFRIKk8tKmcdQN1KSAM8ozP902Wg0rYyPQdMwpXWCm/Yc4Wuh+KzJ8HhTc3MfSFqS4QsBYAL3ockxCiRBQ6JPfioSJ3ATMnmgxpJUcPtkREEvw/arBlO4vZbYyJokszhVOvmiSnj06+EPqTEkHtdtIL+NY36cqMNWLdU75i5xQT0psJqbOnL7hZFNibvQ6wNk5HwARgnoO5rSo+sOFvcpZ+9ABRiYfaCFE6kvufPSsNVNfmbJxvtUWK5EaN9TjFWtnDMdKotGa7SFWoATjkEL7vDCTDoMgd9inuoIht8PETCvs9BxZV+43s6+jFeeXMkpSjJbYIb8P0ZxI6ELfzRTVkZ2xkX9aJWTguPmr6iY638ezrGfKcX9kR8uKQrTrTP9EWnOGftHt7BlTTuJLhKEls=
