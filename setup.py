@@ -1,22 +1,18 @@
-# -*- coding: utf-8 -*-
 import re
 from setuptools import setup, find_packages
 
 INSTALL_REQUIRES = ["webargs~=5.0", "starlette"]
 EXTRAS_REQUIRE = {
-    "tests": [
-        "pytest",
-        "mock",
-        "webtest~=2.0.32",
-        "webtest-asgi~=1.0.1",
-    ],
-    "lint": [
-        "flake8==3.6.0",
-        'flake8-bugbear==18.8.0',
-        "pre-commit==1.13.0",
-    ],
+    "tests": ["pytest", "mock", "webtest~=2.0.32", "webtest-asgi~=1.0.1"],
+    "examples": ["httpie", "uvicorn"],
+    "lint": ["flake8==3.6.0", "flake8-bugbear==18.8.0", "pre-commit==1.13.0"],
 }
-EXTRAS_REQUIRE["dev"] = EXTRAS_REQUIRE["tests"] + EXTRAS_REQUIRE["lint"] + ["tox"]
+EXTRAS_REQUIRE["dev"] = (
+    EXTRAS_REQUIRE["tests"]
+    + EXTRAS_REQUIRE["lint"]
+    + EXTRAS_REQUIRE["examples"]
+    + ["tox"]
+)
 
 
 def find_version(fname):
@@ -55,13 +51,7 @@ setup(
     extras_require=EXTRAS_REQUIRE,
     license="MIT",
     zip_safe=False,
-    keywords=(
-        "webargs",
-        "starlette",
-        "asgi",
-        "request",
-        "parsing",
-    ),
+    keywords=("webargs", "starlette", "asgi", "request", "parsing"),
     classifiers=[
         "Intended Audience :: Developers",
         "License :: OSI Approved :: MIT License",
