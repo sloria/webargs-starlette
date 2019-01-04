@@ -9,19 +9,11 @@ jobs:
   include:
   - { python: '3.6', env: TOXENV=lint }
 
-  - { python: '2.7', env: TOXENV=py27-marshmallow2 }
-  - { python: '2.7', env: TOXENV=py27-marshmallow3 }
-
-  - { python: '3.5', env: TOXENV=py35-marshmallow2 }
-  - { python: '3.5', env: TOXENV=py35-marshmallow3 }
-
   - { python: '3.6', env: TOXENV=py36-marshmallow2 }
   - { python: '3.6', env: TOXENV=py36-marshmallow3 }
 
   - { python: '3.7', env: TOXENV=py37-marshmallow2, dist: xenial, sudo: required }
   - { python: '3.7', env: TOXENV=py37-marshmallow3, dist: xenial, sudo: required }
-
-  - { python: '3.6', env: TOXENV=docs }
 
   - stage: PyPI Release
     if: tag IS present
@@ -34,5 +26,6 @@ jobs:
       on:
         tags: true
       distributions: sdist bdist_wheel
-      password:
-        secure: TMeTi5OPl2cYsl5hNP4w1xESd2vQUOy8NgZ0c3KbrVSSeBuUCGOKyYJZNGzD9KDMucCvYFuxCwYiDxP8tB5iT85z3rhdVkzppZTy3/3kXMODjlhMzqTnCdJSOoZZ+D5/Y3Zqb8QxU78NggPutfX4bbUU/wNsVbdODXWHe5y2q3k=
+      # TODO
+      # password:
+      #   secure: TMeTi5OPl2cYsl5hNP4w1xESd2vQUOy8NgZ0c3KbrVSSeBuUCGOKyYJZNGzD9KDMucCvYFuxCwYiDxP8tB5iT85z3rhdVkzppZTy3/3kXMODjlhMzqTnCdJSOoZZ+D5/Y3Zqb8QxU78NggPutfX4bbUU/wNsVbdODXWHe5y2q3k=

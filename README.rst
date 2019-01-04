@@ -20,11 +20,11 @@ webargs-starlette
 
 
 webargs-starlette is a library for declarative request parsing and
-validation in `Starlette <https://github.com/encode/starlette>`_,
+validation with `Starlette <https://github.com/encode/starlette>`_,
 built on top of `webargs <https://github.com/marshmallow-code/webargs>`_.
 
-All the goodness of `webargs <https://github.com/marshmallow-code/webargs>`_,
-and then some (including type annotations).
+It has all the goodness of `webargs <https://github.com/marshmallow-code/webargs>`_, 
+with some extra sugar for type annotations.
 
 .. code-block:: python
 
@@ -45,10 +45,10 @@ and then some (including type annotations).
     if __name__ == "__main__":
         uvicorn.run(app, port=5000)
 
-    # curl http://localhost:5000/
+    # curl 'http://localhost:5000/'
     # {"Hello": "World"}
-    # curl http://localhost:5000/\?name\='steve'
-    # {"hello": "steve"}
+    # curl 'http://localhost:5000/?name=Ada'
+    # {"Hello": "Ada"}
 
 Install
 =======
@@ -64,7 +64,7 @@ Usage
 Parser Usage
 ------------
 
-Use ``parser.parse`` to parse a Starlette ``Request`` instance with a
+Use ``parser.parse`` to parse a Starlette ``Request`` with a
 dictionary of fields.
 
 .. code-block:: python
@@ -89,7 +89,7 @@ dictionary of fields.
 Decorators
 ----------
 
-Use the ``use_args`` decorator to inject the parsed args
+Use the ``use_args`` decorator to inject the parsed arguments
 dictionary into the handler function. The following snippet is equivalent to the
 first example.
 
@@ -113,7 +113,7 @@ first example.
         return JSONResponse({"message": f"{greeting} {name}"})
 
 
-The ``use_kwargs`` decorator injects the parsed args as keyword arguments.
+The ``use_kwargs`` decorator injects the parsed arguments as keyword arguments.
 
 .. code-block:: python
 
@@ -180,12 +180,14 @@ using type annotations.
         return JSONResponse({"message": f"Welcome, {name}!"})
 
 
-    # curl "http://localhost:5000/?name=Ada".
+    # curl 'http://localhost:5000/'.
+    # {"message":"Welcome, Friend!"}
+    # curl 'http://localhost:5000/?name=Ada'.
     # {"message":"Welcome, Ada!"}
 
-Any annotated argument that doesn't have a default value will be considered required.
+Any annotated argument that doesn't have a default value will be required.
 For example, if we remove the default for ``name`` in the above example,
-an error response is returned if ``?name`` isn't passed.
+an 422 error response is returned if ``?name`` isn't passed.
 
 
 .. code-block:: python
@@ -246,7 +248,7 @@ more control. For example, you may want to add a validator.
     from starlette.applications import Starlette
     from starlette.responses import JSONResponse
     from starlette.endpoints import HTTPEndpoint
-    from webargs_starlette import use_annotations, WebargsHTTPException
+    from webargs_starlette import use_annotations
 
     app = Starlette()
 
@@ -263,7 +265,7 @@ for a more complete example of ``use_annotations`` usage.
 More
 ----
 
-For more information how to use webargs, see the `webargs documentation <https://webargs.readthedocs.io/>`_.
+For more information on how to use webargs, see the `webargs documentation <https://webargs.readthedocs.io/>`_.
 
 License
 =======

@@ -92,7 +92,7 @@ class StarletteParser(AsyncParser):
 
     TYPE_MAPPING: TypeMapping = Schema.TYPE_MAPPING.copy()
 
-    __location_map__: typing.Mapping = dict(
+    __location_map__: typing.Mapping[str, str] = dict(
         path_params="parse_path_params", **core.Parser.__location_map__
     )
 
