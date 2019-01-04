@@ -19,15 +19,21 @@ def annotations2schema(func: typing.Callable, type_mapping: TypeMapping = None):
     annotations = getattr(func, "__annotations__", {})
     signature = inspect.signature(func)
     fields_dict = {}
-    for name, value in annotations.items():
-        if isinstance(value, Field):
-            fields_dict[name] = value
+    for name, annotation in annotations.items():
+        # Skip over request argument and return annotation
+        if name == "return" or issubclass(annotation, Request):
+            continue
+
+        if isinstance(annotation, Field):
+            fields_dict[name] = annotation
         else:
-            if value not in type_mapping:
+            try:
+                field_cls = type_mapping[annotation]
+            except KeyError:
                 raise TypeError(
-                    f'Cannot create field from type annotation for "{name}". Invalid type: {value}'
+                    "Cannot create field from type annotation "
+                    f'for "{name}". Invalid type: {annotation}'
                 )
-            field_cls = type_mapping[value]
             default = signature.parameters[name].default
             required = default is inspect.Parameter.empty
             field_kwargs = {"required": required}
