@@ -53,3 +53,6 @@ class TestAnnotations:
         assert res.status_code == 422
         assert res.json() == {"name": ["Missing data for required field."]}
         assert client.get("/welcome3?name=Ada").json() == {"message": "Welcome, Ada!"}
+
+    def test_use_annotations_on_class(self, client):
+        assert client.post("/add2", json={"x": 2, "y": 2}).json() == {"result": 4}

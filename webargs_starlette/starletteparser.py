@@ -7,11 +7,23 @@ from marshmallow import Schema, ValidationError
 from marshmallow.fields import Field
 from starlette.requests import Request
 from starlette.exceptions import HTTPException
+from starlette.endpoints import HTTPEndpoint
 from webargs.asyncparser import AsyncParser
 from webargs import core
 
 # Marshmallow type mapping
 TypeMapping = typing.Mapping[typing.Type, typing.Type[Field]]
+
+HTTP_METHOD_NAMES = [
+    "get",
+    "post",
+    "put",
+    "patch",
+    "delete",
+    "head",
+    "options",
+    "trace",
+]
 
 
 def annotations2schema(
@@ -74,6 +86,8 @@ def is_json_request(req: Request) -> bool:
 
 
 class StarletteParser(AsyncParser):
+    """Starlette request argument parser."""
+
     TYPE_MAPPING: TypeMapping = Schema.TYPE_MAPPING.copy()
 
     __location_map__: typing.Mapping = dict(
@@ -81,6 +95,7 @@ class StarletteParser(AsyncParser):
     )
 
     def parse_path_params(self, req: Request, name: str, field: Field) -> typing.Any:
+        """Pull a value from the request's ``path_params``."""
         return core.get_value(req.path_params, name, field)
 
     def parse_querystring(self, req: Request, name: str, field: Field) -> typing.Any:
@@ -111,19 +126,19 @@ class StarletteParser(AsyncParser):
             self._cache["json"] = json_data
         return core.get_value(json_data, name, field, allow_many_nested=True)
 
-    def handle_invalid_json_error(
-        self, error: json.JSONDecodeError, req: Request, *args, **kwargs
-    ) -> None:
-        raise WebargsHTTPException(
-            400, exception=error, messages={"json": ["Invalid JSON body."]}
-        )
-
     async def parse_form(self, req, name, field) -> typing.Any:
         """Pull a form value from the request."""
         post_data = self._cache.get("form")
         if post_data is None:
             self._cache["form"] = await req.form()
         return core.get_value(self._cache["form"], name, field)
+
+    def handle_invalid_json_error(
+        self, error: json.JSONDecodeError, req: Request, *args, **kwargs
+    ) -> None:
+        raise WebargsHTTPException(
+            400, exception=error, messages={"json": ["Invalid JSON body."]}
+        )
 
     def get_request_from_view_args(self, view, args, kwargs) -> Request:
         """Get request object from a handler function or method. Used internally by
@@ -159,17 +174,23 @@ class StarletteParser(AsyncParser):
 
     def use_annotations(
         self,
-        fn: typing.Union[typing.Awaitable, None] = None,
+        fn: typing.Union[typing.Awaitable, HTTPEndpoint, None] = None,
         *,
         type_mapping: TypeMapping = None,
         **kwargs,
     ) -> typing.Awaitable:
+        # Allow using this as either a decorator or a decorator factory.
+        if fn is None:
+            return functools.partial(
+                use_annotations, type_mapping=type_mapping, **kwargs
+            )
         type_mapping = type_mapping or self.TYPE_MAPPING
 
         def decorator(func: typing.Awaitable):
+            schema = annotations2schema(func, type_mapping=type_mapping)
+
             @functools.wraps(func)
             async def wrapper(*a, **kw):
-                schema = annotations2schema(func, type_mapping=type_mapping)
                 request = self.get_request_from_view_args(func, a, kw)
                 parsed = await self.parse(schema, request, **kwargs)
                 kw.update(parsed)
@@ -177,10 +198,16 @@ class StarletteParser(AsyncParser):
 
             return wrapper
 
-        # Allow using this as either a decorator or a decorator factory.
-        if fn:
+        if isinstance(fn, type) and issubclass(fn, HTTPEndpoint):
+            endpoint = fn
+            # Decorate each HTTP-mapped method
+            for each in HTTP_METHOD_NAMES:
+                if hasattr(endpoint, each):
+                    handler = getattr(endpoint, each)
+                    setattr(endpoint, each, decorator(handler))
+            return endpoint
+        else:
             return decorator(fn)
-        return decorator
 
 
 parser = StarletteParser()

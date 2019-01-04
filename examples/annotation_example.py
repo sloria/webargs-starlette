@@ -25,6 +25,7 @@ import datetime as dt
 from starlette.applications import Starlette
 from starlette.requests import Request
 from starlette.responses import JSONResponse, Response
+from starlette.endpoints import HTTPEndpoint
 from webargs import fields, validate
 from webargs_starlette import use_annotations, WebargsHTTPException
 
@@ -61,6 +62,15 @@ async def welcome_no_default(request: Request, name: str) -> Response:
 async def add(request: Request, x: float, y: float) -> Response:
     """An addition endpoint."""
     return JSONResponse({"result": x + y})
+
+
+@app.route("/add2")
+@use_annotations(locations=("json",))
+class AddEndpoint(HTTPEndpoint):
+    """An addition endpoint, implemented as a class."""
+
+    async def post(self, request: Request, x: float, y: float) -> Response:
+        return JSONResponse({"result": x + y})
 
 
 @app.route("/dateadd", "POST")

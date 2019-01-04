@@ -30,6 +30,18 @@ class TestStarletteParser(CommonTestCase):
         res = testapp.get("/echo_path_param/42")
         assert res.json == {"path_param": 42}
 
+    @pytest.mark.parametrize(
+        "url",
+        [
+            "/echo_endpoint/",
+            "/echo_endpoint_annotations/",
+            "/echo_endpoint_annotations_class/",
+        ],
+    )
+    def test_endpoint_method(self, testapp, url):
+        assert testapp.get(url).json == {"name": "World"}
+        assert testapp.get(url + "?name=Ada").json == {"name": "Ada"}
+
 
 def test_annotations2schema():
     def func(

@@ -61,8 +61,8 @@ Install
 Usage
 =====
 
-Basic Usage
------------
+Parser Usage
+------------
 
 Use ``parser.parse`` to parse a Starlette ``Request`` instance with a
 dictionary of fields.
@@ -184,8 +184,8 @@ using type annotations.
     # {"message":"Welcome, Ada!"}
 
 Any annotated argument that doesn't have a default value will be considered required.
-For example, if we remove the default for `name` in the above example,
-an error response is returned if it isn't passed.
+For example, if we remove the default for ``name`` in the above example,
+an error response is returned if ``?name`` isn't passed.
 
 
 .. code-block:: python
@@ -211,7 +211,7 @@ an error response is returned if it isn't passed.
     # curl "http://localhost:5000/"
     # {"name":["Missing data for required field."]}
 
-Arguments may also be annotated with `Field` instances when you need
+Arguments may also be annotated with ``Field`` instances when you need
 more control. For example, you may want to add a validator.
 
 .. code-block:: python
@@ -239,6 +239,23 @@ more control. For example, you may want to add a validator.
     # curl "http://localhost:5000/?name=A"
     # {"name":["Shorter than minimum length 2."]}
 
+``HTTPEndpoint`` classes may also be decorated with ``use_annotations``.
+
+.. code-block:: python
+
+    from starlette.applications import Starlette
+    from starlette.responses import JSONResponse
+    from starlette.endpoints import HTTPEndpoint
+    from webargs_starlette import use_annotations, WebargsHTTPException
+
+    app = Starlette()
+
+
+    @app.route("/")
+    @use_annotations(locations=("query",))
+    class WelcomeEndpoint(HTTPEndpoint):
+        async def get(self, request, name: str = "World"):
+            return JSONResponse({"message": f"Welcome, {name}!"})
 
 See `annotation_example.py <https://github.com/sloria/webargs-starlette/blob/master/examples/annotation_example.py>`_
 for a more complete example of ``use_annotations`` usage.

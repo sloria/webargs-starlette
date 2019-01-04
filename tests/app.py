@@ -1,9 +1,15 @@
 from starlette.applications import Starlette
 from starlette.responses import JSONResponse as J
-
+from starlette.endpoints import HTTPEndpoint
 import marshmallow as ma
 from webargs import fields
-from webargs_starlette import parser, use_args, use_kwargs, WebargsHTTPException
+from webargs_starlette import (
+    parser,
+    use_args,
+    use_kwargs,
+    use_annotations,
+    WebargsHTTPException,
+)
 
 from webargs.core import MARSHMALLOW_VERSION_INFO
 
@@ -116,6 +122,27 @@ async def echo_path_param(request):
         {"path_param": fields.Int()}, request, locations=("path_params",)
     )
     return J(parsed)
+
+
+@app.route("/echo_endpoint/")
+class EchoEndpoint(HTTPEndpoint):
+    @use_args(hello_args)
+    async def get(self, request, args):
+        return J(args)
+
+
+@app.route("/echo_endpoint_annotations/")
+class EchoEndpointAnnotations(HTTPEndpoint):
+    @use_annotations
+    async def get(self, request, name: str = "World"):
+        return J({"name": name})
+
+
+@app.route("/echo_endpoint_annotations_class/")
+@use_annotations
+class EchoEndpointAnnotationsClass(HTTPEndpoint):
+    async def get(self, request, name: str = "World"):
+        return J({"name": name})
 
 
 @app.exception_handler(WebargsHTTPException)
