@@ -9,7 +9,8 @@ from examples.annotation_example import app as annotation_app
 class TestCommon:
     @pytest.fixture(params=[decorator_app, annotation_app])
     def client(self, request):
-        return TestClient(request.param)
+        with TestClient(request.param) as client:
+            yield client
 
     def test_index(self, client):
         assert client.get("/").json() == {"message": "Welcome, Friend!"}
@@ -40,7 +41,8 @@ class TestCommon:
 class TestAnnotations:
     @pytest.fixture()
     def client(self):
-        return TestClient(annotation_app)
+        with TestClient(annotation_app) as client:
+            yield client
 
     def test_annotation_with_field(self, client):
         assert client.get("/welcome2").json() == {"message": "Welcome, Friend!"}

@@ -32,7 +32,8 @@ def annotations2schema(func: typing.Callable, type_mapping: TypeMapping = None):
             except KeyError:
                 raise TypeError(
                     "Cannot create field from type annotation "
-                    f'for "{name}". Invalid type: {annotation}'
+                    f'for "{name}". Pass a TypeMapping '
+                    f"that includes {annotation}."
                 )
             default = signature.parameters[name].default
             required = default is inspect.Parameter.empty
@@ -71,6 +72,8 @@ def is_json_request(req: Request) -> bool:
 
 
 class StarletteParser(AsyncParser):
+    TYPE_MAPPING = Schema.TYPE_MAPPING.copy()
+
     __location_map__ = dict(
         path_params="parse_path_params", **core.Parser.__location_map__
     )
@@ -159,6 +162,8 @@ class StarletteParser(AsyncParser):
         type_mapping: TypeMapping = None,
         **kwargs,
     ) -> typing.Awaitable:
+        type_mapping = type_mapping or self.TYPE_MAPPING
+
         def decorator(func: typing.Awaitable):
             @functools.wraps(func)
             async def wrapper(*a, **kw):

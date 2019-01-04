@@ -132,6 +132,10 @@ The ``use_kwargs`` decorator injects the parsed args as keyword arguments.
     async def homepage(request, name, greeting):
         return JSONResponse({"message": f"{greeting} {name}"})
 
+
+See `decorator_example.py <https://github.com/sloria/webargs-starlette/blob/master/examples/annotation_example.py>`_
+for a more complete example of ``use_args`` and ``use_kwargs`` usage.
+
 Error Handling
 --------------
 
