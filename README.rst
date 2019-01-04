@@ -23,28 +23,30 @@ webargs-starlette is a library for declarative request parsing and
 validation in `Starlette <https://github.com/encode/starlette>`_,
 built on top of `webargs <https://github.com/marshmallow-code/webargs>`_.
 
+All the goodness of `webargs <https://github.com/marshmallow-code/webargs>`_,
+and then some (including type annotations).
+
 .. code-block:: python
 
     import uvicorn
     from starlette.applications import Starlette
     from starlette.responses import JSONResponse
-    from webargs import fields
-    from webargs_starlette import use_args
+    from webargs_starlette import use_annotations
 
     app = Starlette()
 
 
     @app.route("/")
-    @use_args({"name": fields.Str(missing="world")})
-    def index(request, args):
-        return JSONResponse({"hello": args["name"]})
+    @use_annotations(locations=("query",))
+    async def index(request, name: str = "World"):
+        return JSONResponse({"Hello": name})
 
 
     if __name__ == "__main__":
-        uvicorn.run(app, host="0.0.0.0", port=5000)
+        uvicorn.run(app, port=5000)
 
     # curl http://localhost:5000/
-    # {"hello": "world"}
+    # {"Hello": "World"}
     # curl http://localhost:5000/\?name\='steve'
     # {"hello": "steve"}
 
@@ -91,6 +93,8 @@ Use the ``use_args`` decorator to inject the parsed args
 dictionary into the handler function. The following snippet is equivalent to the
 first example.
 
+**Important**: Decorated functions MUST be coroutine functions.
+
 .. code-block:: python
 
     from starlette.applications import Starlette
@@ -128,9 +132,6 @@ The ``use_kwargs`` decorator injects the parsed args as keyword arguments.
     async def homepage(request, name, greeting):
         return JSONResponse({"message": f"{greeting} {name}"})
 
-
-For more information how to use webargs, see the `webargs documentation <https://webargs.readthedocs.io/>`_
-
 Error Handling
 --------------
 
@@ -152,6 +153,96 @@ JSON.
     async def http_exception(request, exc):
         return JSONResponse(exc.messages, status_code=exc.status_code, headers=exc.headers)
 
+
+Annotations
+-----------
+
+The ``use_annotations`` decorator allows you to parse request objects
+using type annotations.
+
+
+.. code-block:: python
+
+    from starlette.applications import Starlette
+    from starlette.responses import JSONResponse
+    from webargs_starlette import use_annotations
+
+    app = Starlette()
+
+
+    @app.route("/")
+    @use_annotations(locations=("query",))
+    async def welcome(request, name: str = "Friend"):
+        return JSONResponse({"message": f"Welcome, {name}!"})
+
+
+    # curl "http://localhost:5000/?name=Ada".
+    # {"message":"Welcome, Ada!"}
+
+Any annotated argument that doesn't have a default value will be considered required.
+For example, if we remove the default for `name` in the above example,
+an error response is returned if it isn't passed.
+
+
+.. code-block:: python
+
+    from starlette.applications import Starlette
+    from starlette.responses import JSONResponse
+    from webargs_starlette import use_annotations, WebargsHTTPException
+
+    app = Starlette()
+
+
+    @app.route("/")
+    @use_annotations(locations=("query",))
+    async def welcome(request, name: str):
+        return JSONResponse({"message": f"Welcome, {name}!"})
+
+
+    @app.exception_handler(WebargsHTTPException)
+    async def http_exception(request, exc):
+        return JSONResponse(exc.messages, status_code=exc.status_code, headers=exc.headers)
+
+
+    # curl "http://localhost:5000/"
+    # {"name":["Missing data for required field."]}
+
+Arguments may also be annotated with `Field` instances when you need
+more control. For example, you may want to add a validator.
+
+.. code-block:: python
+
+    from starlette.applications import Starlette
+    from starlette.responses import JSONResponse
+    from webargs import fields
+    from marshmallow import validate
+    from webargs_starlette import use_annotations, WebargsHTTPException
+
+    app = Starlette()
+
+
+    @app.route("/")
+    @use_annotations(locations=("query",))
+    async def welcome(request, name: fields.Str(validate=validate.Length(min=2))):
+        return JSONResponse({"message": f"Welcome, {name}!"})
+
+
+    @app.exception_handler(WebargsHTTPException)
+    async def http_exception(request, exc):
+        return JSONResponse(exc.messages, status_code=exc.status_code, headers=exc.headers)
+
+
+    # curl "http://localhost:5000/?name=A"
+    # {"name":["Shorter than minimum length 2."]}
+
+
+See `annotation_example.py <https://github.com/sloria/webargs-starlette/blob/master/examples/annotation_example.py>`_
+for a more complete example of ``use_annotations`` usage.
+
+More
+----
+
+For more information how to use webargs, see the `webargs documentation <https://webargs.readthedocs.io/>`_.
 
 License
 =======

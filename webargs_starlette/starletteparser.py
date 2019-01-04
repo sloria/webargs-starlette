@@ -1,4 +1,6 @@
 import typing
+import inspect
+import functools
 import json
 
 from marshmallow import Schema, ValidationError
@@ -7,6 +9,33 @@ from starlette.requests import Request
 from starlette.exceptions import HTTPException
 from webargs.asyncparser import AsyncParser
 from webargs import core
+
+# Marshmallow type mapping
+TypeMapping = typing.Mapping[typing.Type, typing.Type[Field]]
+
+
+def annotations2schema(func: typing.Callable, type_mapping: TypeMapping = None):
+    type_mapping = type_mapping or Schema.TYPE_MAPPING
+    annotations = getattr(func, "__annotations__", {})
+    signature = inspect.signature(func)
+    fields_dict = {}
+    for name, value in annotations.items():
+        if isinstance(value, Field):
+            fields_dict[name] = value
+        else:
+            if value not in type_mapping:
+                raise TypeError(
+                    f'Cannot create field from type annotation for "{name}". Invalid type: {value}'
+                )
+            field_cls = type_mapping[value]
+            default = signature.parameters[name].default
+            required = default is inspect.Parameter.empty
+            field_kwargs = {"required": required}
+            if not required:
+                field_kwargs["missing"] = default
+
+            fields_dict[name] = field_cls(**field_kwargs)
+    return core.dict2schema(fields_dict)
 
 
 class WebargsHTTPException(HTTPException):
@@ -117,7 +146,31 @@ class StarletteParser(AsyncParser):
             headers=error_headers,
         )
 
+    def use_annotations(
+        self,
+        fn: typing.Union[typing.Awaitable, None] = None,
+        *,
+        type_mapping: TypeMapping = None,
+        **kwargs,
+    ) -> typing.Awaitable:
+        def decorator(func: typing.Awaitable):
+            @functools.wraps(func)
+            async def wrapper(*a, **kw):
+                reqargs = annotations2schema(func, type_mapping=type_mapping)
+                request = self.get_request_from_view_args(func, a, kw)
+                parsed = await self.parse(reqargs, request, **kwargs)
+                kw.update(parsed)
+                return await func(*a, **kw)
+
+            return wrapper
+
+        # Allow using this as either a decorator or a decorator factory.
+        if fn:
+            return decorator(fn)
+        return decorator
+
 
 parser = StarletteParser()
 use_args = parser.use_args
 use_kwargs = parser.use_kwargs
+use_annotations = parser.use_annotations

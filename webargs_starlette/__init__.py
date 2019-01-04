@@ -3,6 +3,7 @@ from .starletteparser import (
     parser,
     use_args,
     use_kwargs,
+    use_annotations,
     WebargsHTTPException,
 )
 
@@ -12,5 +13,6 @@ __all__ = [
     "parser",
     "use_args",
     "use_kwargs",
+    "use_annotations",
     "WebargsHTTPException",
 ]

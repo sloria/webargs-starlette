@@ -1,11 +1,14 @@
 """A simple number and datetime addition JSON API.
+Uses ``use_annotations`` for parsing requests.
+
 Run the app:
 
-    $ python examples/starlette_example.py
+    $ pip install uvicorn
+    $ python examples/annotation_example.py
 
 Or, to run with automatic reloading:
 
-    $ uvicorn examples.starlette_example:app --port 5001 --debug
+    $ uvicorn examples.annotation_example:app --port 5001 --debug
 
 Try the following with httpie (a cURL-like utility, http://httpie.org):
 
@@ -22,36 +25,49 @@ import datetime as dt
 from starlette.applications import Starlette
 from starlette.responses import JSONResponse
 from webargs import fields, validate
-from webargs_starlette import use_args, use_kwargs, WebargsHTTPException
+from webargs_starlette import use_annotations, WebargsHTTPException
 
 app = Starlette()
 
 
 @app.route("/")
-@use_args({"name": fields.Str(missing="Friend")})
-async def index(request, args):
+@use_annotations(locations=("querystring",))
+async def welcome(request, name: str = "Friend"):
     """A welcome page."""
-    return JSONResponse({"message": f"Welcome, {args['name']}!"})
+    return JSONResponse({"message": f"Welcome, {name}!"})
+
+
+@app.route("/welcome2")
+@use_annotations
+async def welcome2(request, name: fields.Str(missing="Friend", location="querystring")):
+    """A welcome page, using a field annotation."""
+    return JSONResponse({"message": f"Welcome, {name}!"})
+
+
+@app.route("/welcome3")
+@use_annotations(locations=("querystring",))
+async def welcome_no_default(request, name: str):
+    """A welcome page with no default name. If "name" isn't passed in the querystring,
+    an error response will be returned.
+    """
+    return JSONResponse({"message": f"Welcome, {name}!"})
 
 
 @app.route("/add", "POST")
-@use_kwargs({"x": fields.Float(required=True), "y": fields.Float(required=True)})
-async def add(request, x, y):
+@use_annotations(locations=("json",))
+async def add(request, x: float, y: float):
     """An addition endpoint."""
     return JSONResponse({"result": x + y})
 
 
 @app.route("/dateadd", "POST")
-@use_kwargs(
-    {
-        "value": fields.Date(required=False),
-        "addend": fields.Int(required=True, validate=validate.Range(min=1)),
-        "unit": fields.Str(
-            missing="days", validate=validate.OneOf(["minutes", "days"])
-        ),
-    }
-)
-async def dateadd(request, value, addend, unit):
+@use_annotations(locations=("json",))
+async def dateadd(
+    request,
+    addend: fields.Int(required=True, validate=validate.Range(min=1)),
+    unit: fields.Str(missing="days", validate=validate.OneOf(["minutes", "days"])),
+    value: dt.date = None,
+):
     """A datetime adder endpoint."""
     value = value or dt.datetime.utcnow()
     if unit == "minutes":
