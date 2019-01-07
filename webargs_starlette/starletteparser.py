@@ -1,5 +1,4 @@
 import typing
-import inspect
 import functools
 import json
 
@@ -10,9 +9,9 @@ from starlette.exceptions import HTTPException
 from starlette.endpoints import HTTPEndpoint
 from webargs.asyncparser import AsyncParser
 from webargs import core
+from .annotations import TypeMapping, DEFAULT_TYPE_MAPPING, annotations2schema
 
 # Marshmallow type mapping
-TypeMapping = typing.Mapping[typing.Type, typing.Type[Field]]
 
 HTTP_METHOD_NAMES = [
     "get",
@@ -24,41 +23,6 @@ HTTP_METHOD_NAMES = [
     "options",
     "trace",
 ]
-
-
-def annotations2schema(
-    func: typing.Callable, type_mapping: TypeMapping = None
-) -> Schema:
-    type_mapping = type_mapping or Schema.TYPE_MAPPING
-    annotations = getattr(func, "__annotations__", {})
-    signature = inspect.signature(func)
-    fields_dict = {}
-    for name, annotation in annotations.items():
-        # Skip over request argument and return annotation
-        if name == "return" or (
-            isinstance(annotation, type) and issubclass(annotation, Request)
-        ):
-            continue
-
-        if isinstance(annotation, Field):
-            fields_dict[name] = annotation
-        else:
-            try:
-                field_cls = type_mapping[annotation]
-            except KeyError:
-                raise TypeError(
-                    "Cannot create field from type annotation "
-                    f'for "{name}". Pass a TypeMapping '
-                    f"that includes {annotation}."
-                )
-            default = signature.parameters[name].default
-            required = default is inspect.Parameter.empty
-            field_kwargs = {"required": required}
-            if not required:
-                field_kwargs["missing"] = default
-
-            fields_dict[name] = field_cls(**field_kwargs)
-    return core.dict2schema(fields_dict)
 
 
 class WebargsHTTPException(HTTPException):
@@ -90,7 +54,7 @@ def is_json_request(req: Request) -> bool:
 class StarletteParser(AsyncParser):
     """Starlette request argument parser."""
 
-    TYPE_MAPPING: TypeMapping = Schema.TYPE_MAPPING.copy()
+    TYPE_MAPPING: TypeMapping = DEFAULT_TYPE_MAPPING
 
     __location_map__: typing.Mapping[str, str] = dict(
         path_params="parse_path_params", **core.Parser.__location_map__
@@ -108,7 +72,7 @@ class StarletteParser(AsyncParser):
         """Pull a value from the header data."""
         return core.get_value(req.headers, name, field)
 
-    def parse_cookies(self, req: Request, name: str, field: Field):
+    def parse_cookies(self, req: Request, name: str, field: Field) -> typing.Any:
         """Pull a value from the cookiejar."""
         return core.get_value(req.cookies, name, field)
 
@@ -137,7 +101,7 @@ class StarletteParser(AsyncParser):
 
     def handle_invalid_json_error(
         self, error: json.JSONDecodeError, req: Request, *args, **kwargs
-    ) -> None:
+    ) -> typing.NoReturn:
         raise WebargsHTTPException(
             400, exception=error, messages={"json": ["Invalid JSON body."]}
         )
@@ -161,7 +125,7 @@ class StarletteParser(AsyncParser):
         schema: Schema,
         error_status_code: typing.Union[int, None],
         error_headers: typing.Union[dict, None],
-    ) -> None:
+    ) -> typing.NoReturn:
         """Handles errors during parsing. Aborts the current HTTP request and
         responds with a 422 error.
         """
