@@ -19,6 +19,7 @@ Try the following with httpie (a cURL-like utility, http://httpie.org):
     $ http POST :5001/dateadd value=1973-04-10 addend=63
     $ http POST :5001/dateadd value=2014-10-23 addend=525600 unit=minutes
 """
+import typing
 import datetime as dt
 
 from starlette.applications import Starlette
@@ -38,6 +39,7 @@ async def welcome(request: Request, name: str = "Friend") -> Response:
     return JSONResponse({"message": f"Welcome, {name}!"})
 
 
+@typing.no_type_check
 @app.route("/welcome2")
 @use_annotations(locations=("query",))
 async def welcome2(
@@ -72,6 +74,7 @@ class AddEndpoint(HTTPEndpoint):
         return JSONResponse({"result": x + y})
 
 
+@typing.no_type_check
 @app.route("/dateadd", "POST")
 @use_annotations(locations=("json",))
 async def dateadd(

@@ -9,7 +9,8 @@ Features:
 
 * ``use_annotations`` supports more types in the ``typing`` module, as
   well as ``dict`` and ``list``.
-* ``use_annotations`` supports `typing.Optional`.
+* ``use_annotations`` supports ``typing.Optional``.
+* Improve type annotations.
 
 1.0.0 (2018-01-04)
 ------------------

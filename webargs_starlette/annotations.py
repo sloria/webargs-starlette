@@ -64,8 +64,9 @@ def _type2field(
         except KeyError:
             if type(type_) is typing.TypeVar:
                 field_cls = fields.Field
-            # typing.Optional or typing.Union[..., None] -> fields.Field(allow_none=True)
+            # typing.Optional[T] or typing.Union[T, None] -> fields.Field(allow_none=True)
             elif origin_cls is typing.Union and type(None) in args:
+                field_kwargs["allow_none"] = True
                 non_none_args = [
                     arg for arg in args if arg is not type(None)
                 ]  # noqa: E721
@@ -78,7 +79,6 @@ def _type2field(
                         raise TypeMappingError(name, origin_cls)
                 else:
                     field_cls = fields.Field
-                field_kwargs["allow_none"] = True
             else:
                 raise TypeMappingError(name, origin_cls)
 
