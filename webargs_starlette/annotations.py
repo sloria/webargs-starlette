@@ -31,6 +31,15 @@ DEFAULT_TYPE_MAPPING.update(
 TypeMapping = typing.Mapping[typing.Type, typing.Type[Field]]
 
 
+class TypeMappingError(TypeError):
+    def __init__(self, param: str, cls: type) -> None:
+        super().__init__(
+            "Cannot create field from type annotation "
+            f'for "{param}". Pass a TypeMapping '
+            f"that includes {cls}."
+        )
+
+
 def _type2field(
     name: str,
     type_: type,
@@ -41,23 +50,37 @@ def _type2field(
     if isinstance(type_, Field):
         return type_
     else:
+        default = signature.parameters[name].default
+        required = default is inspect.Parameter.empty
+        field_kwargs = {"required": required}
+        args = getattr(type_, "__args__", [])
+
+        if not required:
+            field_kwargs["missing"] = default
+
         origin_cls = getattr(type_, "__origin__", None) or type_
         try:
             field_cls = type_mapping[origin_cls]
         except KeyError:
             if type(type_) is typing.TypeVar:
                 field_cls = fields.Field
+            # typing.Optional or typing.Union[..., None] -> fields.Field(allow_none=True)
+            elif origin_cls is typing.Union and type(None) in args:
+                non_none_args = [
+                    arg for arg in args if arg is not type(None)
+                ]  # noqa: E721
+                # If only one other type is passed, get the proper field for that type
+                # e.g. typing.Union[int, None] -> fields.Int(allow_none=True)
+                if len(non_none_args) == 1:
+                    try:
+                        field_cls = type_mapping[non_none_args[0]]
+                    except KeyError:
+                        raise TypeMappingError(name, origin_cls)
+                else:
+                    field_cls = fields.Field
+                field_kwargs["allow_none"] = True
             else:
-                raise TypeError(
-                    "Cannot create field from type annotation "
-                    f'for "{name}". Pass a TypeMapping '
-                    f"that includes {origin_cls}."
-                )
-        default = signature.parameters[name].default
-        required = default is inspect.Parameter.empty
-        field_kwargs = {"required": required}
-        if not required:
-            field_kwargs["missing"] = default
+                raise TypeMappingError(name, origin_cls)
 
         # Handle container fields
         if issubclass(field_cls, fields.List):
@@ -71,7 +94,6 @@ def _type2field(
         elif (
             issubclass(field_cls, fields.Dict) and core.MARSHMALLOW_VERSION_INFO[0] >= 3
         ):
-            args = getattr(type_, "__args__", [])
             if args:
                 key_type, val_type = args
                 key_container = _type2field(name, key_type, signature, type_mapping)

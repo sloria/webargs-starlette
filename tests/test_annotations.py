@@ -70,6 +70,16 @@ def test_annotations2schema_handles_collection_types_with_parameters():
     assert isinstance(z_field.container, fields.Int)
 
 
+def test_annotations2schema_handles_optional_parameters():
+    def func(x: typing.Optional[str] = None):
+        pass
+
+    schema = annotations2schema(func)()
+    x_field = schema.fields["x"]
+    assert isinstance(x_field, fields.Str)
+    assert x_field.allow_none is True
+
+
 def test_annotation2schema_type_not_in_mapping():
     class MyType:
         pass
