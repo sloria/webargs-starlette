@@ -23,11 +23,6 @@ DEFAULT_TYPE_MAPPING.update(
         typing.MutableSequence: fields.List,
         typing.List: fields.List,
         typing.AnyStr: fields.String,
-        typing.KT: fields.Field,
-        typing.VT: fields.Field,
-        typing.VT_co: fields.Field,
-        typing.T_co: fields.Field,
-        typing.T: fields.Field,
     }
 )
 
@@ -50,11 +45,14 @@ def _type2field(
         try:
             field_cls = type_mapping[origin_cls]
         except KeyError:
-            raise TypeError(
-                "Cannot create field from type annotation "
-                f'for "{name}". Pass a TypeMapping '
-                f"that includes {origin_cls}."
-            )
+            if type(type_) is typing.TypeVar:
+                field_cls = fields.Field
+            else:
+                raise TypeError(
+                    "Cannot create field from type annotation "
+                    f'for "{name}". Pass a TypeMapping '
+                    f"that includes {origin_cls}."
+                )
         default = signature.parameters[name].default
         required = default is inspect.Parameter.empty
         field_kwargs = {"required": required}
