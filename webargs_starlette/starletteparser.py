@@ -11,8 +11,6 @@ from webargs.asyncparser import AsyncParser
 from webargs import core
 from .annotations import TypeMapping, DEFAULT_TYPE_MAPPING, annotations2schema
 
-# Marshmallow type mapping
-
 HTTP_METHOD_NAMES = [
     "get",
     "post",
@@ -33,11 +31,11 @@ class WebargsHTTPException(HTTPException):
     def __init__(
         self,
         status_code: int,
-        detail: str = None,
-        messages: dict = None,
-        exception: Exception = None,
-        headers: dict = None,
-        schema: Schema = None,
+        detail: typing.Optional[str] = None,
+        messages: typing.Optional[dict] = None,
+        exception: typing.Optional[Exception] = None,
+        headers: typing.Optional[dict] = None,
+        schema: typing.Optional[Schema] = None,
     ) -> None:
         super().__init__(status_code, detail)
         self.messages = messages
@@ -140,11 +138,11 @@ class StarletteParser(AsyncParser):
 
     def use_annotations(
         self,
-        fn: typing.Union[typing.Awaitable, HTTPEndpoint, None] = None,
+        fn: typing.Union[typing.Callable, HTTPEndpoint, None] = None,
         *,
         type_mapping: TypeMapping = None,
         **kwargs,
-    ) -> typing.Awaitable:
+    ) -> typing.Union[typing.Callable, HTTPEndpoint]:
         # Allow using this as either a decorator or a decorator factory.
         if fn is None:
             return functools.partial(
@@ -152,7 +150,7 @@ class StarletteParser(AsyncParser):
             )
         type_mapping = type_mapping or self.TYPE_MAPPING
 
-        def decorator(func: typing.Awaitable):
+        def decorator(func: typing.Callable):
             schema = annotations2schema(func, type_mapping=type_mapping)
 
             @functools.wraps(func)

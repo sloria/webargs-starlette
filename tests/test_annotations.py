@@ -10,6 +10,7 @@ from webargs_starlette.annotations import annotations2schema, DEFAULT_TYPE_MAPPI
 
 
 def test_annotations2schema():
+    @typing.no_type_check
     def func(
         req: Request, x: int, y: fields.Int(missing=42), z: str = "zee"
     ) -> Response:

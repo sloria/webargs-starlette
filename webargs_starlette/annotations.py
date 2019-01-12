@@ -32,6 +32,7 @@ DEFAULT_TYPE_MAPPING.update(
 )
 
 
+# Marshmallow type mapping
 TypeMapping = typing.Mapping[typing.Type, typing.Type[Field]]
 
 
@@ -84,7 +85,7 @@ def _type2field(
 
 
 def annotations2schema(
-    func: typing.Callable, type_mapping: TypeMapping = None
+    func: typing.Callable, type_mapping: typing.Optional[TypeMapping] = None
 ) -> Schema:
     type_mapping = type_mapping or DEFAULT_TYPE_MAPPING
     annotations = getattr(func, "__annotations__", {})
