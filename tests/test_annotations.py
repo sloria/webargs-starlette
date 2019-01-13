@@ -10,6 +10,7 @@ from webargs_starlette.annotations import annotations2schema, DEFAULT_TYPE_MAPPI
 
 
 def test_annotations2schema():
+    @typing.no_type_check
     def func(
         req: Request, x: int, y: fields.Int(missing=42), z: str = "zee"
     ) -> Response:
@@ -67,6 +68,16 @@ def test_annotations2schema_handles_collection_types_with_parameters():
     assert isinstance(y_field.container, fields.Str)
     assert isinstance(z_field, fields.List)
     assert isinstance(z_field.container, fields.Int)
+
+
+def test_annotations2schema_handles_optional_parameters():
+    def func(x: typing.Optional[str] = None):
+        pass
+
+    schema = annotations2schema(func)()
+    x_field = schema.fields["x"]
+    assert isinstance(x_field, fields.Str)
+    assert x_field.allow_none is True
 
 
 def test_annotation2schema_type_not_in_mapping():
