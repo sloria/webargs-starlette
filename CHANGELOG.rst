@@ -2,7 +2,7 @@
 Changelog
 *********
 
-1.1.0 (unreleased)
+1.1.0 (2019-01-13)
 ------------------
 
 Features:
@@ -12,7 +12,7 @@ Features:
 * ``use_annotations`` supports ``typing.Optional``.
 * Improve type annotations.
 
-1.0.0 (2018-01-04)
+1.0.0 (2019-01-04)
 ------------------
 
 * First release.
