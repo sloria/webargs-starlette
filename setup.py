@@ -52,6 +52,7 @@ setup(
     author_email="sloria1@gmail.com",
     url="https://github.com/sloria/webargs-starlette",
     packages=find_packages(exclude=("test*", "examples")),
+    package_data={"webargs_starlette": ["py.typed"]},
     install_requires=INSTALL_REQUIRES,
     extras_require=EXTRAS_REQUIRE,
     license="MIT",

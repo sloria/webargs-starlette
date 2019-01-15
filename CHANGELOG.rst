@@ -2,6 +2,13 @@
 Changelog
 *********
 
+1.2.0 (unreleased)
+------------------
+
+Features:
+
+* Export type annotations.
+
 1.1.0 (2019-01-13)
 ------------------
 
