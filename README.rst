@@ -6,9 +6,9 @@ webargs-starlette
     :target: https://badge.fury.io/py/webargs-starlette
     :alt: PyPI version
 
-.. image:: https://badgen.net/travis/sloria/webargs-starlette/master
-    :target: https://travis-ci.org/sloria/webargs-starlette
-    :alt: TravisCI build status
+.. image:: https://dev.azure.com/sloria/sloria/_apis/build/status/sloria.webargs-starlette?branchName=master
+    :target: https://dev.azure.com/sloria/sloria/_build/latest?definitionId=11&branchName=master
+    :alt: Build status
 
 .. image:: https://badgen.net/badge/marshmallow/2,3?list=1
     :target: https://marshmallow.readthedocs.io/en/latest/upgrading.html
