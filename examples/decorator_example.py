@@ -36,7 +36,7 @@ async def index(request, args):
     return JSONResponse({"message": f"Welcome, {args['name']}!"})
 
 
-@app.route("/add", "POST")
+@app.route("/add", methods=["POST"])
 @use_kwargs(
     {"x": fields.Float(required=True), "y": fields.Float(required=True)},
     locations=("json",),
@@ -46,7 +46,7 @@ async def add(request, x, y):
     return JSONResponse({"result": x + y})
 
 
-@app.route("/dateadd", "POST")
+@app.route("/dateadd", methods=["POST"])
 @use_kwargs(
     {
         "value": fields.Date(required=False),

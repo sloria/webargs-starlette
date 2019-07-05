@@ -100,14 +100,14 @@ async def echo_cookie(request):
     return J(await parser.parse(hello_args, request, locations=("cookies",)))
 
 
-@app.route("/echo_nested", "POST")
+@app.route("/echo_nested", methods=["POST"])
 async def echo_nested(request):
     args = {"name": fields.Nested({"first": fields.Str(), "last": fields.Str()})}
     parsed = await parser.parse(args, request)
     return J(parsed)
 
 
-@app.route("/echo_nested_many", "POST")
+@app.route("/echo_nested_many", methods=["POST"])
 async def echo_nested_many(request):
     args = {
         "users": fields.Nested({"id": fields.Int(), "name": fields.Str()}, many=True)

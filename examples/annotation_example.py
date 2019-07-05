@@ -58,7 +58,7 @@ async def welcome_no_default(request: Request, name: str) -> Response:
     return JSONResponse({"message": f"Welcome, {name}!"})
 
 
-@app.route("/add", "POST")
+@app.route("/add", methods=["POST"])
 @use_annotations(locations=("json",))
 async def add(request: Request, x: float, y: float) -> Response:
     """An addition endpoint."""
@@ -75,7 +75,7 @@ class AddEndpoint(HTTPEndpoint):
 
 
 @typing.no_type_check
-@app.route("/dateadd", "POST")
+@app.route("/dateadd", methods=["POST"])
 @use_annotations(locations=("json",))
 async def dateadd(
     request: Request,
