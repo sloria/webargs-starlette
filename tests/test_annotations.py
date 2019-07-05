@@ -62,12 +62,12 @@ def test_annotations2schema_handles_collection_types_with_parameters():
     z_field = schema.fields["z"]
     assert isinstance(x_field, fields.Dict)
     if MARSHMALLOW_VERSION_INFO[0] >= 3:
-        assert isinstance(x_field.key_container, fields.Str)
-        assert isinstance(x_field.value_container, fields.Int)
+        assert isinstance(x_field.key_field, fields.Str)
+        assert isinstance(x_field.value_field, fields.Int)
+        assert isinstance(y_field.inner, fields.Str)
+        assert isinstance(z_field.inner, fields.Int)
     assert isinstance(y_field, fields.List)
-    assert isinstance(y_field.container, fields.Str)
     assert isinstance(z_field, fields.List)
-    assert isinstance(z_field.container, fields.Int)
 
 
 def test_annotations2schema_handles_optional_parameters():
