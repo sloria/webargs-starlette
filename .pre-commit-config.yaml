@@ -8,7 +8,7 @@ repos:
   rev: 18.9b0
   hooks:
   - id: black
-    language_version: python3.6
+    language_version: python3
     args: [--py36]
 - repo: https://gitlab.com/pycqa/flake8
   rev: 3.7.7
@@ -19,6 +19,7 @@ repos:
   rev: v0.650
   hooks:
   - id: mypy
+    language_version: python3
 - repo: https://github.com/asottile/blacken-docs
   rev: v0.3.0
   hooks:
