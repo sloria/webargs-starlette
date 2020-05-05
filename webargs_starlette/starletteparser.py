@@ -3,12 +3,12 @@ import functools
 import json
 
 from marshmallow import Schema, ValidationError
-from marshmallow.fields import Field
 from starlette.requests import Request
 from starlette.exceptions import HTTPException
 from starlette.endpoints import HTTPEndpoint
 from webargs.asyncparser import AsyncParser
 from webargs import core
+from webargs.multidictproxy import MultiDictProxy
 from .annotations import TypeMapping, DEFAULT_TYPE_MAPPING, annotations2schema
 
 HTTP_METHOD_NAMES: typing.List[str] = [
@@ -55,51 +55,54 @@ class StarletteParser(AsyncParser):
     TYPE_MAPPING: TypeMapping = DEFAULT_TYPE_MAPPING
 
     __location_map__: typing.Dict[str, typing.Union[str, typing.Callable]] = dict(
-        path_params="parse_path_params", **core.Parser.__location_map__
+        path_params="load_path_params", **core.Parser.__location_map__
     )
 
-    def parse_path_params(self, req: Request, name: str, field: Field) -> typing.Any:
-        """Pull a value from the request's ``path_params``."""
-        return core.get_value(req.path_params, name, field)
+    def load_path_params(self, req: Request, schema: Schema) -> typing.Any:
+        """Return the request's ``path_params`` or ``missing`` if there are none."""
+        return req.path_params or core.missing
 
-    def parse_querystring(self, req: Request, name: str, field: Field) -> typing.Any:
-        """Pull a querystring value from the request."""
-        return core.get_value(req.query_params, name, field)
+    def load_querystring(self, req: Request, schema: Schema) -> MultiDictProxy:
+        """Return query params from the request as a MultiDictProxy."""
+        return MultiDictProxy(req.query_params, schema)
 
-    def parse_headers(self, req: Request, name: str, field: Field) -> typing.Any:
-        """Pull a value from the header data."""
-        return core.get_value(req.headers, name, field)
+    def load_headers(self, req: Request, schema: Schema) -> MultiDictProxy:
+        """Return headers from the request as a MultiDictProxy."""
+        return MultiDictProxy(req.headers, schema)
 
-    def parse_cookies(self, req: Request, name: str, field: Field) -> typing.Any:
-        """Pull a value from the cookiejar."""
-        return core.get_value(req.cookies, name, field)
+    def load_cookies(self, req: Request, schema: Schema):
+        """Return cookies from the request."""
+        return req.cookies
 
-    async def parse_json(self, req: Request, name: str, field: Field) -> typing.Any:
-        """Pull a json value from the request."""
-        json_data = self._cache.get("json")
-        if json_data is None:
-            if not is_json_request(req):
+    async def load_json(self, req: Request, schema: Schema) -> typing.Dict:
+        """Return a parsed json payload from the request."""
+        if not is_json_request(req):
+            return core.missing
+        try:
+            json_data = await req.json()
+        except json.JSONDecodeError as exc:
+            if exc.doc == "":
                 return core.missing
-            try:
-                json_data = await req.json()
-            except json.JSONDecodeError as e:
-                if e.doc == "":
-                    return core.missing
-                else:
-                    return self.handle_invalid_json_error(e, req)
-            except UnicodeDecodeError as e:
-                return self.handle_invalid_json_error(e, req)
-            self._cache["json"] = json_data
-        return core.get_value(json_data, name, field, allow_many_nested=True)
+            else:
+                return self._handle_invalid_json_error(exc, req)
+        except UnicodeDecodeError as exc:
+            return self._handle_invalid_json_error(exc, req)
+        return json_data
 
-    async def parse_form(self, req: Request, name: str, field: Field) -> typing.Any:
-        """Pull a form value from the request."""
-        post_data = self._cache.get("form")
-        if post_data is None:
-            self._cache["form"] = await req.form()
-        return core.get_value(self._cache["form"], name, field)
+    async def load_form(self, req: Request, schema: Schema) -> MultiDictProxy:
+        """Return form values from the request as a MultiDictProxy."""
+        post_data = await req.form()
+        return MultiDictProxy(post_data, schema)
 
-    def handle_invalid_json_error(
+    async def load_json_or_form(
+        self, req: Request, schema: Schema
+    ) -> typing.Union[typing.Dict, MultiDictProxy]:
+        data = await self.load_json(req, schema)
+        if data is not core.missing:
+            return data
+        return await self.load_form(req, schema)
+
+    def _handle_invalid_json_error(
         self, error: Exception, req: Request, *args, **kwargs
     ) -> typing.NoReturn:
         raise WebargsHTTPException(

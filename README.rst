@@ -37,7 +37,7 @@ with some extra sugar for type annotations.
 
 
     @app.route("/")
-    @use_annotations(locations=("query",))
+    @use_annotations(location="query")
     async def index(request, name: str = "World"):
         return JSONResponse({"Hello": name})
 
@@ -175,7 +175,7 @@ using type annotations.
 
 
     @app.route("/")
-    @use_annotations(locations=("query",))
+    @use_annotations(location="query")
     async def welcome(request, name: str = "Friend"):
         return JSONResponse({"message": f"Welcome, {name}!"})
 
@@ -200,7 +200,7 @@ an 422 error response is returned if ``?name`` isn't passed.
 
 
     @app.route("/")
-    @use_annotations(locations=("query",))
+    @use_annotations(location="query")
     async def welcome(request, name: str):
         return JSONResponse({"message": f"Welcome, {name}!"})
 
@@ -228,7 +228,7 @@ more control. For example, you may want to add a validator.
 
 
     @app.route("/")
-    @use_annotations(locations=("query",))
+    @use_annotations(location="query")
     async def welcome(request, name: fields.Str(validate=validate.Length(min=2))):
         return JSONResponse({"message": f"Welcome, {name}!"})
 
@@ -241,7 +241,7 @@ more control. For example, you may want to add a validator.
     # curl "http://localhost:5000/?name=A"
     # {"name":["Shorter than minimum length 2."]}
 
-``HTTPEndpoint`` classes may also be decorated with ``use_annotations``.
+``HTTPEndpoint`` methods may also be decorated with ``use_annotations``.
 
 .. code-block:: python
 
@@ -254,8 +254,8 @@ more control. For example, you may want to add a validator.
 
 
     @app.route("/")
-    @use_annotations(locations=("query",))
     class WelcomeEndpoint(HTTPEndpoint):
+        @use_annotations(location="query")
         async def get(self, request, name: str = "World"):
             return JSONResponse({"message": f"Welcome, {name}!"})
 

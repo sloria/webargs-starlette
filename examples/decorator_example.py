@@ -30,7 +30,7 @@ app = Starlette()
 
 
 @app.route("/")
-@use_args({"name": fields.Str(missing="Friend")}, locations=("querystring",))
+@use_args({"name": fields.Str(missing="Friend")}, location="querystring")
 async def index(request, args):
     """A welcome page."""
     return JSONResponse({"message": f"Welcome, {args['name']}!"})
@@ -39,7 +39,7 @@ async def index(request, args):
 @app.route("/add", methods=["POST"])
 @use_kwargs(
     {"x": fields.Float(required=True), "y": fields.Float(required=True)},
-    locations=("json",),
+    location="json",
 )
 async def add(request, x, y):
     """An addition endpoint."""
@@ -55,7 +55,7 @@ async def add(request, x, y):
             missing="days", validate=validate.OneOf(["minutes", "days"])
         ),
     },
-    locations=("json",),
+    location="json",
 )
 async def dateadd(request, value, addend, unit):
     """A datetime adder endpoint."""

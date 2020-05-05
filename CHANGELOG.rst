@@ -2,6 +2,18 @@
 Changelog
 *********
 
+2.0.0 (unreleased)
+------------------
+
+Features:
+
+* *Backwards-incompatible*: Support webargs 6.x. webargs<6 is no longer supported.
+* Tested against Python 3.8.
+
+Other changes:
+
+* *Backwards-incompatible*: Drop support for marshmallow 2.x. Only marshmallow>=3 is supported.
+
 1.2.1 (2020-05-04)
 ------------------
 
