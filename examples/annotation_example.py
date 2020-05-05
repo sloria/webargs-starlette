@@ -33,7 +33,7 @@ app = Starlette()
 
 
 @app.route("/")
-@use_annotations(locations=("query",))
+@use_annotations(location="query")
 async def welcome(request: Request, name: str = "Friend") -> Response:
     """A welcome page."""
     return JSONResponse({"message": f"Welcome, {name}!"})
@@ -41,7 +41,7 @@ async def welcome(request: Request, name: str = "Friend") -> Response:
 
 @typing.no_type_check
 @app.route("/welcome2")
-@use_annotations(locations=("query",))
+@use_annotations(location="query")
 async def welcome2(
     request: Request, name: fields.Str(missing="Friend", location="querystring")
 ) -> Response:
@@ -50,7 +50,7 @@ async def welcome2(
 
 
 @app.route("/welcome3")
-@use_annotations(locations=("query",))
+@use_annotations(location="query")
 async def welcome_no_default(request: Request, name: str) -> Response:
     """A welcome page with no default name. If "name" isn't passed in the querystring,
     an error response will be returned.
@@ -59,24 +59,24 @@ async def welcome_no_default(request: Request, name: str) -> Response:
 
 
 @app.route("/add", methods=["POST"])
-@use_annotations(locations=("json",))
+@use_annotations(location="json")
 async def add(request: Request, x: float, y: float) -> Response:
     """An addition endpoint."""
     return JSONResponse({"result": x + y})
 
 
 @app.route("/add2")
-@use_annotations(locations=("json",))
 class AddEndpoint(HTTPEndpoint):
     """An addition endpoint, implemented as a class."""
 
+    @use_annotations(location="json")
     async def post(self, request: Request, x: float, y: float) -> Response:
         return JSONResponse({"result": x + y})
 
 
 @typing.no_type_check
 @app.route("/dateadd", methods=["POST"])
-@use_annotations(locations=("json",))
+@use_annotations(location="json")
 async def dateadd(
     request: Request,
     addend: fields.Int(required=True, validate=validate.Range(min=1)),

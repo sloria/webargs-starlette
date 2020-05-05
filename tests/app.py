@@ -11,84 +11,107 @@ from webargs_starlette import (
     WebargsHTTPException,
 )
 
-from webargs.core import MARSHMALLOW_VERSION_INFO
-
 app = Starlette()
 app.debug = True
-
-hello_args = {"name": fields.Str(missing="World", validate=lambda n: len(n) >= 3)}
-hello_multiple = {"name": fields.List(fields.Str())}
 
 
 class HelloSchema(ma.Schema):
     name = fields.Str(missing="World", validate=lambda n: len(n) >= 3)
 
 
-strict_kwargs = {"strict": True} if MARSHMALLOW_VERSION_INFO[0] < 3 else {}
-hello_many_schema = HelloSchema(many=True, **strict_kwargs)
+hello_args = {"name": fields.Str(missing="World", validate=lambda n: len(n) >= 3)}
+hello_multiple = {"name": fields.List(fields.Str())}
+hello_exclude_schema = HelloSchema(unknown=ma.EXCLUDE)
+hello_many_schema = HelloSchema(many=True)
 
 
-@app.route("/echo", methods=["GET", "POST"])
+@app.route("/echo", methods=["GET"])
 async def echo(request):
-    return J(await parser.parse(hello_args, request))
+    return J(await parser.parse(hello_args, request, location="query"))
 
 
 @app.route("/echo_query")
 async def echo_query(request):
-    parsed = await parser.parse(hello_args, request, locations=("query",))
+    parsed = await parser.parse(hello_args, request, location="query")
     return J(parsed)
 
 
 @app.route("/echo_json", methods=["POST"])
 async def echo_json(request):
-    parsed = await parser.parse(hello_args, request, locations=("json",))
+    parsed = await parser.parse(hello_args, request, location="json")
     return J(parsed)
 
 
 @app.route("/echo_form", methods=["POST"])
 async def echo_form(request):
-    parsed = await parser.parse(hello_args, request, locations=("form",))
+    parsed = await parser.parse(hello_args, request, location="form")
     return J(parsed)
 
 
-@app.route("/echo_use_args", methods=["GET", "POST"])
-@use_args(hello_args)
+@app.route("/echo_json_or_form", methods=["POST"])
+async def echo_json_or_form(request):
+    parsed = await parser.parse(hello_args, request, location="json_or_form")
+    return J(parsed)
+
+
+@app.route("/echo_ignoring_extra_data", methods=["POST"])
+async def echo_json_ignore_extra_data(request):
+    parsed = await parser.parse(hello_exclude_schema, request)
+    return J(parsed)
+
+
+@app.route("/echo_use_args", methods=["GET"])
+@use_args(hello_args, location="query")
 async def echo_use_args(request, args):
     return J(args)
 
 
-@app.route("/echo_use_args_validated", methods=["GET", "POST"])
-@use_args({"value": fields.Int()}, validate=lambda args: args["value"] > 42)
+@app.route("/echo_use_args_validated", methods=["POST"])
+@use_args(
+    {"value": fields.Int()}, validate=lambda args: args["value"] > 42, location="form"
+)
 async def echo_use_args_validated(request, args):
     return J(args)
 
 
-@app.route("/echo_use_kwargs", methods=["GET", "POST"])
-@use_kwargs(hello_args)
+@app.route("/echo_use_kwargs", methods=["GET"])
+@use_kwargs(hello_args, location="query")
 async def echo_use_kwargs(request, name):
     return J({"name": name})
 
 
-@app.route("/echo_multi", methods=["GET", "POST"])
+@app.route("/echo_multi", methods=["GET"])
 async def echo_multi(request):
-    result = await parser.parse(hello_multiple, request)
+    result = await parser.parse(hello_multiple, request, location="query")
+    return J(result)
+
+
+@app.route("/echo_multi_form", methods=["POST"])
+async def echo_multi_form(request):
+    result = await parser.parse(hello_multiple, request, location="form")
+    return J(result)
+
+
+@app.route("/echo_multi_json", methods=["POST"])
+async def echo_multi_json(request):
+    result = await parser.parse(hello_multiple, request, location="json")
     return J(result)
 
 
 @app.route("/echo_many_schema", methods=["GET", "POST"])
 async def many_nested(request):
-    arguments = await parser.parse(hello_many_schema, request, locations=("json",))
+    arguments = await parser.parse(hello_many_schema, request, location="json")
     return J(arguments)
 
 
 @app.route("/echo_use_args_with_path_param/{name}")
-@use_args({"value": fields.Int()})
+@use_args({"value": fields.Int()}, location="query")
 async def echo_use_args_with_path(request, args):
     return J(args)
 
 
 @app.route("/echo_use_kwargs_with_path_param/{name}")
-@use_kwargs({"value": fields.Int()})
+@use_kwargs({"value": fields.Int()}, location="query")
 async def echo_use_kwargs_with_path(request, value):
     return J({"value": value})
 
@@ -104,12 +127,14 @@ async def error(request):
 
 @app.route("/echo_headers")
 async def echo_headers(request):
-    return J(await parser.parse(hello_args, request, locations=("headers",)))
+    # the "exclude schema" must be used in this case because WSGI headers may
+    # be populated with many fields not sent by the caller
+    return J(await parser.parse(hello_exclude_schema, request, location="headers"))
 
 
 @app.route("/echo_cookie")
 async def echo_cookie(request):
-    return J(await parser.parse(hello_args, request, locations=("cookies",)))
+    return J(await parser.parse(hello_args, request, location="cookies"))
 
 
 @app.route("/echo_nested", methods=["POST"])
@@ -131,28 +156,21 @@ async def echo_nested_many(request):
 @app.route("/echo_path_param/{path_param}")
 async def echo_path_param(request):
     parsed = await parser.parse(
-        {"path_param": fields.Int()}, request, locations=("path_params",)
+        {"path_param": fields.Int()}, request, location="path_params"
     )
     return J(parsed)
 
 
 @app.route("/echo_endpoint/")
 class EchoEndpoint(HTTPEndpoint):
-    @use_args(hello_args)
+    @use_args(hello_args, location="query")
     async def get(self, request, args):
         return J(args)
 
 
 @app.route("/echo_endpoint_annotations/")
 class EchoEndpointAnnotations(HTTPEndpoint):
-    @use_annotations
-    async def get(self, request, name: str = "World"):
-        return J({"name": name})
-
-
-@app.route("/echo_endpoint_annotations_class/")
-@use_annotations
-class EchoEndpointAnnotationsClass(HTTPEndpoint):
+    @use_annotations(location="query")
     async def get(self, request, name: str = "World"):
         return J({"name": name})
 

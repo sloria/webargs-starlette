@@ -27,15 +27,15 @@ class TestCommon:
     def test_error(self, client):
         res = client.post("/dateadd", json={})
         assert res.status_code == 422
-        assert res.json() == {"addend": ["Missing data for required field."]}
+        assert res.json() == {"json": {"addend": ["Missing data for required field."]}}
 
         res = client.post("/dateadd", json={"addend": "invalid"})
         assert res.status_code == 422
-        assert "addend" in res.json()
+        assert "addend" in res.json()["json"]
 
         res = client.post("/dateadd", json={"addend": 42, "unit": "invalid"})
         assert res.status_code == 422
-        assert "unit" in res.json()
+        assert "unit" in res.json()["json"]
 
 
 class TestAnnotations:
@@ -51,7 +51,7 @@ class TestAnnotations:
     def test_param_with_no_default(self, client):
         res = client.get("/welcome3")
         assert res.status_code == 422
-        assert res.json() == {"name": ["Missing data for required field."]}
+        assert res.json() == {"query": {"name": ["Missing data for required field."]}}
         assert client.get("/welcome3?name=Ada").json() == {"message": "Welcome, Ada!"}
 
     def test_use_annotations_on_class(self, client):
