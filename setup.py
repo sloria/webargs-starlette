@@ -7,9 +7,9 @@ EXTRAS_REQUIRE = {
     "examples": ["httpie", "uvicorn"],
     "lint": [
         "mypy==0.730",
-        "flake8==3.7.8",
-        "flake8-bugbear==19.8.0",
-        "pre-commit~=1.17",
+        "flake8==3.7.9",
+        "flake8-bugbear==20.1.4",
+        "pre-commit~=2.3",
     ],
 }
 EXTRAS_REQUIRE["dev"] = (
@@ -25,7 +25,7 @@ def find_version(fname):
     Raises RuntimeError if not found.
     """
     version = ""
-    with open(fname, "r") as fp:
+    with open(fname) as fp:
         reg = re.compile(r'__version__ = [\'"]([^\'"]*)[\'"]')
         for line in fp:
             m = reg.match(line)
