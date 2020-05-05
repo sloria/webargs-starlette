@@ -87,6 +87,8 @@ class StarletteParser(AsyncParser):
                     return core.missing
                 else:
                     return self.handle_invalid_json_error(e, req)
+            except UnicodeDecodeError as e:
+                return self.handle_invalid_json_error(e, req)
             self._cache["json"] = json_data
         return core.get_value(json_data, name, field, allow_many_nested=True)
 
@@ -98,7 +100,7 @@ class StarletteParser(AsyncParser):
         return core.get_value(self._cache["form"], name, field)
 
     def handle_invalid_json_error(
-        self, error: json.JSONDecodeError, req: Request, *args, **kwargs
+        self, error: Exception, req: Request, *args, **kwargs
     ) -> typing.NoReturn:
         raise WebargsHTTPException(
             400, exception=error, messages={"json": ["Invalid JSON body."]}
