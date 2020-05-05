@@ -10,9 +10,9 @@ webargs-starlette
     :target: https://dev.azure.com/sloria/sloria/_build/latest?definitionId=11&branchName=master
     :alt: Build status
 
-.. image:: https://badgen.net/badge/marshmallow/2,3?list=1
-    :target: https://marshmallow.readthedocs.io/en/latest/upgrading.html
-    :alt: marshmallow 2/3 compatible
+.. image:: https://badgen.net/badge/marshmallow/3
+    :target: https://marshmallow.readthedocs.io/en/stable/
+    :alt: marshmallow 3 compatible
 
 .. image:: https://badgen.net/badge/code%20style/black/000
     :target: https://github.com/ambv/black
