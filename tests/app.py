@@ -39,6 +39,18 @@ async def echo_query(request):
     return J(parsed)
 
 
+@app.route("/echo_json", methods=["POST"])
+async def echo_json(request):
+    parsed = await parser.parse(hello_args, request, locations=("json",))
+    return J(parsed)
+
+
+@app.route("/echo_form", methods=["POST"])
+async def echo_form(request):
+    parsed = await parser.parse(hello_args, request, locations=("form",))
+    return J(parsed)
+
+
 @app.route("/echo_use_args", methods=["GET", "POST"])
 @use_args(hello_args)
 async def echo_use_args(request, args):

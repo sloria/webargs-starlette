@@ -2,6 +2,13 @@
 Changelog
 *********
 
+1.2.1 (unreleased)
+------------------
+
+Bug fixes:
+
+* Handle ``JSONDecodeError`` when parsing JSON.
+
 1.2.0 (2019-07-05)
 ------------------
 
