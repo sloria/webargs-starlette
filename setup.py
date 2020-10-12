@@ -6,7 +6,7 @@ EXTRAS_REQUIRE = {
     "tests": ["pytest", "mock", "webtest~=2.0.32", "webtest-asgi~=1.0.1"],
     "examples": ["httpie", "uvicorn"],
     "lint": [
-        "mypy==0.782",
+        "mypy==0.790",
         "flake8==3.8.4",
         "flake8-bugbear==20.1.4",
         "pre-commit~=2.3",
