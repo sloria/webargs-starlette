@@ -2,6 +2,13 @@
 Changelog
 *********
 
+2.1.0 (unreleased)
+------------------
+
+Features:
+
+* Testd against Python 3.9.
+
 2.0.0 (2020-05-05)
 ------------------
 
