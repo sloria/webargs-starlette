@@ -68,8 +68,8 @@ def _type2field(
             elif origin_cls is typing.Union and type(None) in args:
                 field_kwargs["allow_none"] = True
                 non_none_args = [
-                    arg for arg in args if arg is not type(None)
-                ]  # noqa: E721
+                    arg for arg in args if arg is not type(None)  # noqa: E721
+                ]
                 # If only one other type is passed, get the proper field for that type
                 # e.g. typing.Union[int, None] -> fields.Int(allow_none=True)
                 if len(non_none_args) == 1:
