@@ -1,7 +1,7 @@
 import re
 from setuptools import setup, find_packages
 
-INSTALL_REQUIRES = ["webargs~=6.0", "starlette>=0.9.0", "marshmallow~=3.0"]
+INSTALL_REQUIRES = ["webargs>=6,<8", "starlette>=0.9.0", "marshmallow~=3.0"]
 EXTRAS_REQUIRE = {
     "tests": ["pytest", "mock", "webtest~=2.0.32", "webtest-asgi~=1.0.1"],
     "examples": ["httpie", "uvicorn"],
