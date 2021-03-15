@@ -7,7 +7,7 @@ EXTRAS_REQUIRE = {
     "examples": ["httpie", "uvicorn"],
     "lint": [
         "mypy==0.812",
-        "flake8==3.8.4",
+        "flake8==3.9.0",
         "flake8-bugbear==21.3.2",
         "pre-commit~=2.3",
     ],
