@@ -24,8 +24,10 @@ HTTP_METHOD_NAMES: typing.List[str] = [
 
 
 class WebargsHTTPException(HTTPException):
-    """Same as `starlette.exceptions.HTTPException` but stores validation
-    messages, the underlying exception, the `marshmallow.Schema` used to parse the request,  headers.
+    """
+    Same as `starlette.exceptions.HTTPException` but stores validation
+    messages, the underlying exception, the `marshmallow.Schema`
+    used to parse the request, headers.
     """
 
     def __init__(
@@ -145,11 +147,11 @@ class StarletteParser(AsyncParser):
 
     def use_annotations(
         self,
-        fn: typing.Union[typing.Callable, HTTPEndpoint, None] = None,
+        fn: typing.Union[typing.Callable, typing.Type[HTTPEndpoint], None] = None,
         *,
         type_mapping: TypeMapping = None,
         **kwargs,
-    ) -> typing.Union[typing.Callable[..., typing.Callable], HTTPEndpoint]:
+    ) -> typing.Union[typing.Callable[..., typing.Callable], typing.Type[HTTPEndpoint]]:
         # Allow using this as either a decorator or a decorator factory.
         if fn is None:
             return functools.partial(

@@ -1,25 +1,26 @@
 import typing
 import inspect
-from collections.abc import Mapping, Iterable, Sequence, MutableSequence
+from collections import abc
 
 from starlette.requests import Request
 from marshmallow import Schema, fields
 from marshmallow.fields import Field
-from webargs import core
+
+from webargs_starlette.dict2schema import dict2schema
 
 DEFAULT_TYPE_MAPPING = Schema.TYPE_MAPPING.copy()
 DEFAULT_TYPE_MAPPING.update(
     {
         dict: fields.Dict,
         list: fields.List,
-        Mapping: fields.Dict,
+        abc.Mapping: fields.Dict,
         typing.Mapping: fields.Dict,
         typing.Dict: fields.Dict,
-        Iterable: fields.List,
+        abc.Iterable: fields.List,
         typing.Iterable: fields.List,
-        Sequence: fields.List,
+        abc.Sequence: fields.List,
         typing.Sequence: fields.List,
-        MutableSequence: fields.List,
+        abc.MutableSequence: fields.List,
         typing.MutableSequence: fields.List,
         typing.List: fields.List,
         typing.AnyStr: fields.String,
@@ -56,12 +57,12 @@ def _type2field(
         args = getattr(type_, "__args__", [])
 
         if not required:
-            field_kwargs["missing"] = default
+            field_kwargs["load_default"] = default
 
         origin_cls = getattr(type_, "__origin__", None) or type_
         try:
             field_cls = type_mapping[origin_cls]
-        except KeyError:
+        except KeyError as key_err:
             if type(type_) is typing.TypeVar:
                 field_cls = fields.Field
             # typing.Optional[T] or typing.Union[T, None] -> fields.Field(allow_none=True)
@@ -75,12 +76,12 @@ def _type2field(
                 if len(non_none_args) == 1:
                     try:
                         field_cls = type_mapping[non_none_args[0]]
-                    except KeyError:
-                        raise TypeMappingError(name, origin_cls)
+                    except KeyError as err:
+                        raise TypeMappingError(name, origin_cls) from err
                 else:
                     field_cls = fields.Field
             else:
-                raise TypeMappingError(name, origin_cls)
+                raise TypeMappingError(name, origin_cls) from key_err
 
         # Handle container fields
         if issubclass(field_cls, fields.List):
@@ -91,9 +92,7 @@ def _type2field(
             else:
                 container = fields.Field()
             field_kwargs["cls_or_instance"] = container
-        elif (
-            issubclass(field_cls, fields.Dict) and core.MARSHMALLOW_VERSION_INFO[0] >= 3
-        ):
+        elif issubclass(field_cls, fields.Dict):
             if args:
                 key_type, val_type = args
                 key_container = _type2field(name, key_type, signature, type_mapping)
@@ -106,7 +105,7 @@ def _type2field(
 
 def annotations2schema(
     func: typing.Callable, type_mapping: typing.Optional[TypeMapping] = None
-) -> Schema:
+) -> typing.Type[Schema]:
     type_mapping = type_mapping or DEFAULT_TYPE_MAPPING
     annotations = getattr(func, "__annotations__", {})
     signature = inspect.signature(func)
@@ -119,4 +118,5 @@ def annotations2schema(
             continue
 
         fields_dict[name] = _type2field(name, annotation, signature, type_mapping)
-    return core.dict2schema(fields_dict)
+
+    return dict2schema(fields_dict)

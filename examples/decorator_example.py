@@ -30,7 +30,7 @@ app = Starlette()
 
 
 @app.route("/")
-@use_args({"name": fields.Str(missing="Friend")}, location="querystring")
+@use_args({"name": fields.Str(load_default="Friend")}, location="querystring")
 async def index(request, args):
     """A welcome page."""
     return JSONResponse({"message": f"Welcome, {args['name']}!"})
@@ -52,7 +52,7 @@ async def add(request, x, y):
         "value": fields.Date(required=False),
         "addend": fields.Int(required=True, validate=validate.Range(min=1)),
         "unit": fields.Str(
-            missing="days", validate=validate.OneOf(["minutes", "days"])
+            load_default="days", validate=validate.OneOf(["minutes", "days"])
         ),
     },
     location="json",
