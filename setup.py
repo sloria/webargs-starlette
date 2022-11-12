@@ -3,7 +3,13 @@ from setuptools import setup, find_packages
 
 INSTALL_REQUIRES = ["webargs~=8.0", "starlette>=0.9.0", "marshmallow~=3.0"]
 EXTRAS_REQUIRE = {
-    "tests": ["pytest", "mock", "webtest~=2.0.32", "webtest-asgi~=1.0.1"],
+    "tests": [
+        "pytest",
+        "mock",
+        "webtest~=2.0.32",
+        "python-multipart",
+        "httpx~=0.23.0",  # starlette >= v0.21.0 requires httpx for TestClient
+    ],
     "examples": ["httpie", "uvicorn"],
     "lint": [
         "mypy==0.971",
@@ -63,11 +69,11 @@ setup(
         "License :: OSI Approved :: MIT License",
         "Natural Language :: English",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
         "Topic :: Internet :: WWW/HTTP",
     ],
     test_suite="tests",

@@ -6,7 +6,6 @@ from starlette.requests import Request
 from marshmallow import Schema, fields
 from marshmallow.fields import Field
 
-from webargs_starlette.dict2schema import dict2schema
 
 DEFAULT_TYPE_MAPPING = Schema.TYPE_MAPPING.copy()
 DEFAULT_TYPE_MAPPING.update(
@@ -119,4 +118,5 @@ def annotations2schema(
 
         fields_dict[name] = _type2field(name, annotation, signature, type_mapping)
 
-    return dict2schema(fields_dict)
+    schema_class = Schema.from_dict(fields_dict)
+    return typing.cast(typing.Type[Schema], schema_class)

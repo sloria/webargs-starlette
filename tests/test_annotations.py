@@ -12,7 +12,7 @@ def test_annotations2schema():
     @typing.no_type_check
     def func(
         req: Request, x: int, y: fields.Int(missing=42), z: str = "zee"
-    ) -> Response:
+    ) -> typing.Type[Response]:
         return Response
 
     schema = annotations2schema(func)()

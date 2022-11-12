@@ -1,9 +1,9 @@
 import pytest
-import webtest_asgi
 
 from webargs.testing import CommonTestCase
 
 from .app import app
+from .webtest_asgi import WebTestApp
 
 
 class TestStarletteParser(CommonTestCase):
@@ -11,7 +11,7 @@ class TestStarletteParser(CommonTestCase):
         return app
 
     def create_testapp(self, app):
-        return webtest_asgi.TestApp(app)
+        return WebTestApp(app)
 
     @pytest.mark.skip(reason="form keys with multiple values not supported")
     def test_parse_form_multiple(self):

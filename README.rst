@@ -79,7 +79,10 @@ dictionary of fields.
 
     @app.route("/")
     async def homepage(request):
-        args = {"name": fields.Str(required=True), "greeting": fields.Str(missing="hello")}
+        args = {
+            "name": fields.Str(required=True),
+            "greeting": fields.Str(load_default="hello"),
+        }
         parsed = await parser.parse(args, request)
         greeting = parsed["greeting"]
         name = parsed["name"]
@@ -106,7 +109,9 @@ first example.
 
 
     @app.route("/")
-    @use_args({"name": fields.Str(required=True), "greeting": fields.Str(missing="hello")})
+    @use_args(
+        {"name": fields.Str(required=True), "greeting": fields.Str(load_default="hello")}
+    )
     async def homepage(request, args):
         greeting = args["greeting"]
         name = args["name"]
@@ -127,7 +132,7 @@ The ``use_kwargs`` decorator injects the parsed arguments as keyword arguments.
 
     @app.route("/")
     @use_kwargs(
-        {"name": fields.Str(required=True), "greeting": fields.Str(missing="hello")}
+        {"name": fields.Str(required=True), "greeting": fields.Str(load_default="hello")}
     )
     async def homepage(request, name, greeting):
         return JSONResponse({"message": f"{greeting} {name}"})
