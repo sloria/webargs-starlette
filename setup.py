@@ -1,15 +1,9 @@
 import re
 from setuptools import setup, find_packages
 
-INSTALL_REQUIRES = ["webargs~=8.0", "starlette>=0.9.0", "marshmallow~=3.0"]
+INSTALL_REQUIRES = ["webargs~=8.0", "starlette>=0.21.0", "marshmallow~=3.0"]
 EXTRAS_REQUIRE = {
-    "tests": [
-        "pytest",
-        "mock",
-        "webtest~=2.0.32",
-        "python-multipart",
-        "httpx~=0.23.0",  # starlette >= v0.21.0 requires httpx for TestClient
-    ],
+    "tests": ["pytest", "mock", "webtest~=2.0.32", "webtest-asgi~=1.1.0"],
     "examples": ["httpie", "uvicorn"],
     "lint": [
         "mypy==0.971",
