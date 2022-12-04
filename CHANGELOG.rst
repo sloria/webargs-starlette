@@ -7,7 +7,17 @@ Changelog
 
 Features:
 
-* Testd against Python 3.9.
+* Tested against Python 3.9, 3.10, and 3.11.
+
+Bug fixes:
+
+* Various typing fixes.
+
+Other changes:
+
+* Drop support for Python 3.6.
+
+Thanks `@DmitryBurnaev <https://github.com/DmitryBurnaev>`_ for the PR for these changes.
 
 2.0.0 (2020-05-05)
 ------------------
