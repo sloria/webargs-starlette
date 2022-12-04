@@ -43,7 +43,8 @@ async def welcome(request: Request, name: str = "Friend") -> Response:
 @app.route("/welcome2")
 @use_annotations(location="query")
 async def welcome2(
-    request: Request, name: fields.Str(missing="Friend", location="querystring")
+    request: Request,
+    name: fields.Str(load_default="Friend", metadata={"location": "querystring"}),
 ) -> Response:
     """A welcome page, using a field annotation."""
     return JSONResponse({"message": f"Welcome, {name}!"})
@@ -80,7 +81,7 @@ class AddEndpoint(HTTPEndpoint):
 async def dateadd(
     request: Request,
     addend: fields.Int(required=True, validate=validate.Range(min=1)),
-    unit: fields.Str(missing="days", validate=validate.OneOf(["minutes", "days"])),
+    unit: fields.Str(load_default="days", validate=validate.OneOf(["minutes", "days"])),
     value: dt.date = None,
 ) -> Response:
     """A datetime adder endpoint."""
